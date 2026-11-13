@@ -1,0 +1,17 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DB_PATH: /data/app.db
+      MIGRATION_INTERVAL_SECONDS: "2"     # 后台批量迁移间隔
+      MIGRATION_BATCH_SIZE: "50"          # 每批处理条数
+      MIGRATION_RECORD_DELAY_MS: "0"      # 演示用：每条记录的人工延迟，放大"迁移进行中"窗口
+      SEED_DEMO: "true"                   # 启动时写入演示样本（唯一/重复/不存在各一）
+    volumes:
+      - dbdata:/data    # SQLite 持久化：容器重启后数据仍在，worker 接着迁 pending 记录
+    restart: unless-stopped
+
+volumes:
+  dbdata:
