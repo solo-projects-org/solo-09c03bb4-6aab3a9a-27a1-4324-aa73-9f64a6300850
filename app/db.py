@@ -27,6 +27,19 @@ CREATE TABLE IF NOT EXISTS samples (
 );
 CREATE INDEX IF NOT EXISTS idx_samples_status ON samples(status);
 CREATE INDEX IF NOT EXISTS idx_samples_utc ON samples(utc_time);
+
+-- 样本号归并关系：sample_no 旧号 → primary_no 当时的主号。
+-- 不设外键：主号之后可能再次被归并（链式），旧号解析时沿链走到最终主号。
+-- 关系与 samples 同库，随 /data 命名卷持久化，重启后仍有效。
+CREATE TABLE IF NOT EXISTS sample_aliases (
+  sample_no        TEXT PRIMARY KEY,          -- 被归并掉的旧号
+  primary_no       TEXT NOT NULL,             -- 归并当时的直接主号
+  source_version   INTEGER,                   -- 归并前源号版本（审计）
+  primary_version  INTEGER,                   -- 归并前主号版本（审计）
+  merged_version   INTEGER,                   -- 归并后的主记录版本
+  merged_at        TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_aliases_primary ON sample_aliases(primary_no);
 """
 
 
